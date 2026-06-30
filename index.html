@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solaris — AI Medical Assistant</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.5-9.5-9C1 8 3 4.5 6.5 4.5c2 0 3.3 1.2 5.5 3.5 2.2-2.3 3.5-3.5 5.5-3.5C21 4.5 23 8 21.5 12c-2 4.5-9.5 9-9.5 9Z" stroke="#C8473A" stroke-width="1.4"/></svg>
+      Solaris
+    </div>
+    <nav id="nav"></nav>
+  </div>
+</header>
+
+<div class="pulse-strip" aria-hidden="true">
+  <svg viewBox="0 0 600 40" preserveAspectRatio="none"><path d="M0 20 H60 L75 5 L90 35 L105 20 H160 L175 8 L190 32 L205 20 H260 L275 5 L290 35 L305 20 H360 L375 8 L390 32 L405 20 H460 L475 5 L490 35 L505 20 H560 L575 8 L590 32 L600 20" stroke="#C8473A" stroke-width="1.5" fill="none"/></svg>
+</div>
+
+<main>
+
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Triage, not diagnosis</div>
+        <h1>One quiet place to make sense<br>of how you feel.</h1>
+        <p class="lede">Solaris helps you look up medicines, check symptoms, find a nearby pharmacy, and book a visit — then hands you off to a licensed clinician for anything that matters. It does not replace one.</p>
+        <div style="margin-top:24px;display:flex;gap:12px;">
+          <button class="primary" onclick="showView('symptoms')">Check symptoms</button>
+          <button class="ghost" onclick="showView('chat')">Talk to assistant</button>
+        </div>
+      </div>
+      <div class="vitals-card">
+        <span class="tag">Today's reading · mock data</span>
+        <div class="row"><span class="label">Heart rate</span><b>71 bpm</b></div>
+        <div class="row"><span class="label">Blood pressure</span><b>118 / 76 mmHg</b></div>
+        <div class="row"><span class="label">SpO₂</span><b>98 %</b></div>
+        <div class="row"><span class="label">Sleep, last night</span><b>7h 12m</b></div>
+        <div class="row"><span class="label">Next appointment</span><b>Jul 8, 10:30</b></div>
+      </div>
+    </div>
+
+    <div class="grid cols-3">
+      <div class="card" style="cursor:pointer" onclick="showView('medicine')">
+        <h3>Medicine search</h3>
+        <p>Look up a drug by name to see dosage, interactions, and warnings before you take it.</p>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="showView('symptoms')">
+        <h3>Symptom checker</h3>
+        <p>Select what you're feeling and get a plain-language read on urgency — never a diagnosis.</p>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="showView('pharmacy')">
+        <h3>Pharmacy locator</h3>
+        <p>Find which nearby pharmacies are open right now and what they stock.</p>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="showView('dashboard')">
+        <h3>Health dashboard</h3>
+        <p>A running view of your vitals, medication schedule, and recent activity.</p>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="showView('chat')">
+        <h3>AI assistant</h3>
+        <p>Ask questions in plain words and get sourced, cautious answers — with an exit to a human.</p>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="showView('appointment')">
+        <h3>Book an appointment</h3>
+        <p>Pick a clinician, a time slot, and a reason for the visit in under a minute.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEDICINE SEARCH -->
+  <section class="view" id="view-medicine">
+    <div class="eyebrow">Drug reference</div>
+    <h2>Medicine search</h2>
+    <p class="lede">Search the formulary below. This is reference information, not a prescription — always follow your clinician's or pharmacist's instructions.</p>
+    <div class="search-bar" style="margin-top:24px;">
+      <input id="medSearch" type="text" placeholder="Search by name — try “ibuprofen”, “metformin”, “amoxicillin”…" oninput="renderDrugs()">
+    </div>
+    <div class="grid cols-2" id="drugResults"></div>
+  </section>
+
+  <!-- SYMPTOM CHECKER -->
+  <section class="view" id="view-symptoms">
+    <div class="eyebrow">Self-assessment</div>
+    <h2>Symptom checker</h2>
+    <div class="disclaimer">
+      This tool offers general educational information only — not a diagnosis or a personal prescription. Any self-care or over-the-counter suggestions are general adult guidance; check with a pharmacist or doctor before taking anything, especially if you're pregnant, on other medication, or treating a child. If you have chest pain, trouble breathing, severe bleeding, or think this is an emergency, call your local emergency number now.
+    </div>
+    <p class="lede" style="margin-bottom:14px;">Select everything that applies, then continue.</p>
+    <div id="symptomChips"></div>
+    <div style="margin-top:20px;">
+      <button class="primary" onclick="runSymptomCheck()">Assess my symptoms</button>
+    </div>
+    <div class="result-box" id="symptomResult"></div>
+  </section>
+
+  <!-- PHARMACY LOCATOR -->
+  <section class="view" id="view-pharmacy">
+    <div class="eyebrow">Find care nearby</div>
+    <h2>Pharmacy locator</h2>
+    <p class="lede" style="margin-bottom:20px;">Solaris uses your device's location to find real nearby pharmacies. Your location is only used in your browser to run this search — it isn't stored.</p>
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+      <button class="primary" id="locateBtn" onclick="locatePharmacies()">Use my location</button>
+      <span class="search-bar" style="flex:1;margin:0;min-width:220px;">
+        <input id="manualLocation" type="text" placeholder="…or type a city or address" style="margin:0;">
+      </span>
+      <button class="ghost" onclick="searchByAddress()">Search</button>
+    </div>
+    <div id="pharmStatus" class="lede" style="margin-bottom:14px;"></div>
+    <div class="map-placeholder" id="pharmMapNote">map view — pharmacy pins would render here</div>
+    <div id="pharmList"></div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="view" id="view-dashboard">
+    <div class="eyebrow">Your record</div>
+    <h2>Health dashboard</h2>
+    <p class="lede" style="margin-bottom:24px;">A snapshot of recent vitals and medication adherence. Mock data for demonstration.</p>
+    <div class="grid cols-3" style="margin-bottom:24px;">
+      <div class="stat"><div class="num">71</div><div class="lbl">Resting heart rate (bpm)</div></div>
+      <div class="stat"><div class="num">118/76</div><div class="lbl">Blood pressure</div></div>
+      <div class="stat"><div class="num">94%</div><div class="lbl">Medication adherence, 30d</div></div>
+    </div>
+    <div class="card">
+      <h3>Heart rate, last 7 days</h3>
+      <div class="mini-chart" id="hrChart"></div>
+    </div>
+    <div class="grid cols-2" style="margin-top:20px;">
+      <div class="card">
+        <h3>Upcoming medications</h3>
+        <p>Lisinopril 10mg — 8:00 AM<br>Metformin 500mg — 1:00 PM &amp; 8:00 PM<br>Atorvastatin 20mg — 9:00 PM</p>
+      </div>
+      <div class="card">
+        <h3>Recent activity</h3>
+        <p>Logged blood pressure — 2h ago<br>Refilled Atorvastatin — yesterday<br>Booked appointment with Dr. Adeyemi — 3 days ago</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAT -->
+  <section class="view" id="view-chat">
+    <div class="eyebrow">Ask Solaris</div>
+    <h2>AI chat assistant</h2>
+    <p class="lede" style="margin-bottom:20px;">A mockup of a cautious, source-aware assistant. It will not diagnose and will redirect urgent concerns to a clinician.</p>
+    <div class="chat-shell">
+      <div class="chat-window" id="chatWindow">
+        <div class="msg bot">Hi, I'm the Solaris assistant. I can help you understand symptoms, medicines, or find care — what's going on?</div>
+      </div>
+      <div class="chat-input">
+        <input id="chatInput" type="text" placeholder="Type a question…" onkeydown="if(event.key==='Enter')sendChat()">
+        <button onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPOINTMENT -->
+  <section class="view" id="view-appointment">
+    <div class="eyebrow">Book a visit</div>
+    <h2>Appointment booking</h2>
+    <p class="lede" style="margin-bottom:24px;">Choose a clinician, a reason, and an open slot. You'll get a confirmation immediately.</p>
+    <div class="form-grid">
+      <div class="field">
+        <label for="apClinician">Clinician</label>
+        <select id="apClinician">
+          <option>Dr. Folake Adeyemi — General Practice</option>
+          <option>Dr. Chinedu Okafor — Internal Medicine</option>
+          <option>Dr. Amara Eze — Pediatrics</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="apReason">Reason for visit</label>
+        <input id="apReason" type="text" placeholder="e.g. follow-up, persistent cough…">
+      </div>
+      <div class="field">
+        <label for="apName">Full name</label>
+        <input id="apName" type="text" placeholder="Your name">
+      </div>
+      <div class="field">
+        <label for="apDate">Preferred date</label>
+        <input id="apDate" type="date">
+      </div>
+    </div>
+    <div style="margin-top:22px;">
+      <label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8a8474;">Available slots</label>
+      <div id="slots" style="margin-top:10px;"></div>
+    </div>
+    <button class="primary" style="margin-top:18px;" onclick="bookAppointment()">Confirm appointment</button>
+    <div class="confirm-box" id="apConfirm"></div>
+  </section>
+
+</main>
+
+<footer>Solaris is a demonstration interface only and does not provide medical advice. In an emergency, contact local emergency services immediately.</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
